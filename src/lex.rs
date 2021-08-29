@@ -1,5 +1,7 @@
 use std::iter::{Iterator};
 use std::io;
+use core::iter::Peekable;
+use core::str::Chars;
 
 
 
@@ -8,31 +10,20 @@ pub enum Token {
 }
 
 
-pub struct Lexer {
-
+pub struct Lexer<'a>{
     row: usize,
-    col: usize
+    col: usize,
+    buffer: &'a mut Peekable<Chars<'a>>,
 }
 
 /// Lexer 
 /// implement the `Iterator` trait to generate `Token`
-impl Lexer {
+impl<'a> Lexer<'a> {
     
-    pub fn new(file: &str) -> Self {
-        unimplemented!()
-    }
-
-    pub fn from_slice(slice: &[char]) -> Self {
-        unimplemented!()
-    }
-
-    // fill the inner buffer read from current file with only one line 
-    fn fill_buffer(&mut self) -> Result<(), io::Error> {
-        unimplemented!()
-    }
+    
 }
 
-impl Iterator for Lexer {
+impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {

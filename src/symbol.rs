@@ -1,2 +1,10 @@
 
-pub enum Symbol {}
+pub enum Symbol {
+    
+
+}
+
+// SymbolTable save the symbol 
+pub struct SymbolTable {
+
+}

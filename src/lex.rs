@@ -1,61 +1,47 @@
+use std::iter::{Iterator};
+use std::io;
 
-use std::error::Error;
-use std::path::Path;
-use std::io::prelude::*;
-use std::fs::File;
-// Token 
+
+
 pub enum Token {
-    White
+
 }
 
-// Stream using the iterator to split the Token from letters Stream
-pub struct Stream {
-    file: File
+
+pub struct Lexer {
+
+    row: usize,
+    col: usize
 }
 
-impl Stream {
+/// Lexer 
+/// implement the `Iterator` trait to generate `Token`
+impl Lexer {
     
-
-    // open file and create the Stream instance 
-    pub fn new(file: &str) -> Result<Stream, Box<dyn Error>> {
-        let path =  Path::new(file);
-        let mut file = match File::open(&path) {
-            Ok(f) => f,
-            Err(e) => return Err(Box::new(e)),
-        };
-
-
-        Ok(Stream{
-            file,
-        })
+    pub fn new(file: &str) -> Self {
+        unimplemented!()
     }
 
-
-    // return next Token 
-    // the outer should use the std::cell::RefCell<Stream> to use this function 
-    pub fn next(&mut self) -> Result<Token, Box<dyn Error>> {
-
-
-        Ok(Token::White)
-    }
-    
-    // consume current token remove it from token cache
-    pub fn consume(&mut self) {
-
+    pub fn from_slice(slice: &[char]) -> Self {
+        unimplemented!()
     }
 
-    // back one token 
-    pub fn back(&mut self) {
-
+    // fill the inner buffer read from current file with only one line 
+    fn fill_buffer(&mut self) -> Result<(), io::Error> {
+        unimplemented!()
     }
+}
 
+impl Iterator for Lexer {
+    type Item = Token;
 
-    // TODO: implement the lexer main logic 
-    fn lex(&mut self) {
-    
-
-
+    fn next(&mut self) -> Option<Self::Item> {
+        unimplemented!()
     }
+}
 
-    // TODO: how to rollback move the file pointer and re-read or cache all text 
+
+#[cfg(test)]
+mod test {
+
 }

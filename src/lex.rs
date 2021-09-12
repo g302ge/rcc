@@ -1,8 +1,6 @@
 use std::iter::{Iterator};
-use std::io;
 use core::iter::Peekable;
 use core::str::Chars;
-use std::error::Error;
 
 
 pub enum Whitespace {
@@ -12,21 +10,34 @@ pub enum Whitespace {
 }
 
 pub enum Keyword {
-    Const,
-    Static,
+    Auto,
+    Double,
     Int,
-    Float,
-    Unsigned,
-    Long,
-    LongLong,
-    For,
-    If,
+    Struct,
+    Break,
     Else,
-    While,
-    Do,
-    Loop,
+    Long,
     Switch,
-    Case,
+    Char, 
+    Extern,
+    Return,
+    Union,
+    Const,
+    Float,
+    Short,
+    Unsigned,
+    Continue,
+    For,
+    Signed,
+    Void,
+    Defaults, // Token default FIXME: should use r#Default
+    Goto,
+    Sizeof,
+    Volatile,
+    Do,
+    If,
+    Static,
+    While
 }
 
 // TODO: we need Integer enum to identify the integer parse form stream ?
@@ -59,9 +70,14 @@ pub enum Token {
     AndAnd(usize, usize), // Token &&
     Or(usize, usize), // Token |
     OrOr(usize, usize), // Token ||
-
+    Dot(usize, usize), // Tokene .
+    DotDotDot(usize, usize), // Token ... ellipsis
     Keyword(usize, usize, Keyword), // Token for keywords see Keyword enum
     Identifier(usize, usize, String), // Token for ID
+    FloatConstant(usize, usize, String), // Token for float constant
+    IntegerConstant(usize, usize, String), // Token for integer constant
+    StringConstant(usize, usize, String), // Token for String constant
+    CharConstant(usize, usize, String),    
     Label(usize, usize, String), // Token label format xxx:     
 }
 
@@ -77,6 +93,8 @@ pub struct LexerError {
 pub struct Lexer<'a>{
     row: usize,
     col: usize,
+    // I think in the future should use another Trait to replace this Trait Object
+    // Because of this Trait Object could not generate from file though the file format is UTF8
     source: &'a mut Peekable<Chars<'a>>,
 }
 
@@ -108,6 +126,7 @@ impl<'a> Lexer<'a> {
         }
         Some(Ok(token))
     }
+
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -146,28 +165,62 @@ impl<'a> Iterator for Lexer<'a> {
                  },
                  '/' => {
                     // have to handle not only // but also /*xxx*/ format comment 
+                    // if // should omit this line 
+                    // if /* should find the comment block
                     None
                  },
-                 '+' => None,
-                 '-' => None,
+                 '+' => { // + ++
+                     self.source.next();
+                     let c = self.source.peek().unwrap();
+                     if c == &'+' {
+                         self.source.next();
+                        return self.consume(
+                                Token::PlusPlus(self.row, self.col),
+                                0,
+                                2
+                            );
+                     }
+                     self.consume(
+                            Token::Plus(self.row, self.col),
+                            0,
+                            1
+                         )
+                 },
+                 '-' => { // - --
+                    self.source.next();
+                    let c = self.source.peek().unwrap(); 
+                    if c == &'-' {
+                        self.source.next();
+                        return self.consume(
+                                Token::MinusMinus(self.row, self.col),
+                                0,
+                                2
+                            );
+                    } 
+                    self.consume(
+                            Token::Minus(self.row, self.col),
+                            0,
+                            1
+                        )
+                 },
                  '*' => None, // multiply and pointer
-                 '%' => None,
+                 '%' => None, // %
                  '&' => None, // & &&
                  '|' => None, // | ||
-                 '^' => None,
+                 '^' => None, // ^
                  '<' => None, // < <= << 
                  '>' => None, // > >= >>
                  '=' => None, // = == 
-                 '!' => None, // ! not
-                 ';' => None,
-                 ',' => None,
-                 '.' => None,
-                 '(' => None,
-                 ')' => None,
-                 '[' => None,
-                 ']' => None,
-                 '{' => None,
-                 '}' => None,
+                 '!' => None, // ! 
+                 ';' => None, // ;
+                 ',' => None, // ,
+                 '.' => None, // . ...
+                 '(' => None, // (
+                 ')' => None, // )
+                 '[' => None, // [
+                 ']' => None, // ]
+                 '{' => None, // {
+                 '}' => None, // }
                  'a'..='z' | 'A'..='Z' | '_' => None, // identifier also keyword 
                  '\'' => None, // char const,
                  '"' => None, // string const,
@@ -181,7 +234,7 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                      ))
             },
-            // at this point identify the lexer arrived end of file
+            // at this point identify the lexer arrived EOF
             None => None
         }
     }
